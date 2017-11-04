@@ -8,6 +8,10 @@ area(backstage, "Backstage Wo man rein will").
 area(stage, "Die Bühne").
 area(auditorium, "Der Zuschauerraum").
 
+areaIntro(draussen, "Die heimatliebende Band 'Pepe and the Frogs' haben es mittels Empatielosigkeit, Mut zur 'Warheit' und mangels von Spaß im Leben geschafft  jede Menge bosorgte Bürger Fans für ihr heutiges Konzert anzulocken. \n Eure band 'Nyan and the Cats' hat mit 'Yam Yam' einen weltweiten hit gelandet. Eure Message von Regenbogen und Toestbrot wird allerdings in letzter Zeit durch 'Pepe and the Frogs' untergraben! \n\nAus GRÜNDEN und 'for the LUZ' habt ihr nun vor, den heutigen Abend kreativ etwas umzugestalten. Es ist 16:00, ihr seid schon leicht angetrunken und vermisst noch euren Keyboarder Kosaka, der eigentlich schon vor 'ner halben Stunde hier sein wollte.").
+areaIntro(bar,"Hier bin ich Mensch, hier kann ich bleiben!").
+
+
 path(draussen, bar).
 path(bar, draussen).
 path(ourside, parkplatz).
@@ -15,10 +19,26 @@ path(parkplatz, backstage).
 path(backstage, parking).
 path(backstage, stage).
 path(stage, backstage).
+path(auditorium, auditorium).
 path(draussen, auditorium).
-currentArea(draussen).
+visited(draussen).
 
-reachable(X) :- currentArea(Y), path(Y, X).
+reachable(X) :- personArea(me, Y), path(Y, X).
+
+
+type(area, "Bereich").
+type(item, "Gegenstand").
+type(person, "Person").
+
+areaWithType(Name, Description, Type) :- area(Name, Description), type(area, Type).
+itemWithType(Name, Area, Type):- item(Name, Description, Area), type(item, Type).
+personWithType(Name, Area, Type):- personArea(Name, Area), type(person, Type).	
+
+describeArea(Area, Description, Type) :- areaWithType(Area, Description, Type).
+describeArea(Area, Item, Type) :- itemWithType(Item, Area, Type).
+describeArea(Area, Person, Type) :- personWithType(Person, Area, Type), Person <> me.
+
+currentTime(16).
 
 % -----
 % ITEMS
@@ -30,6 +50,17 @@ item(handy, "Dein Handy", inventory).
 
 inInventory(X) :- item(X, Z, inventory).
 visibleItem(X) :- inInventory(X).
-visibleItem(X) :- item(X, Z, Y), currentArea(Y).
+visibleItem(X) :- item(X, Z, Y), personArea(me, Y).
+
+
+% ------
+% PEOPLE
+% ------
+
+person(me, "Exrem gut aussehende, Toestbrotförmige Katze.").
+person(pepe, "Endgegner.").
+
+personArea(me, draussen).
+personArea(pepe, bar).
 
 

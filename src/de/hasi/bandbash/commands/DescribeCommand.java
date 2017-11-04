@@ -14,8 +14,9 @@ public class DescribeCommand implements Command {
 
     @Override
     public Collection<Map<String, String>> execute(List<String> params) {
+        String errorStr = "Either say 'describe area', 'describe item x' or 'describe person x'";
         if(params.size() < 2 ){
-            return newMessage("Either say 'describe area' or 'describe item x'");
+            return newMessage(errorStr);
         }
         switch (params.get(1)){
             case "area":
@@ -25,8 +26,12 @@ public class DescribeCommand implements Command {
                     return newMessage("Please specify an item");
                 }
                 return queries.describeItem(params.get(2));
+            case "person":
+                if(params.size() < 3){
+                    return newMessage("Please specify a person");
+                }
+                return queries.describePerson(params.get(2));
         }
-
-        return null;
+        return newMessage(errorStr);
     }
 }

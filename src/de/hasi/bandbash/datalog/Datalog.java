@@ -14,7 +14,6 @@ import java.io.Reader;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static de.hasi.bandbash.utils.Utils.getFirst;
 import static de.hasi.bandbash.utils.Utils.newMessage;
@@ -51,19 +50,26 @@ public class Datalog implements Queries {
     }
 
     private String getCurrentArea() throws DatalogException {
-        Collection<Map<String, String>> answers = jatalog.query(Expr.expr("currentArea", "X"));
+        Collection<Map<String, String>> answers = jatalog.query(Expr.expr("personArea", "me", "X"));
         return getFirst(answers, "X");
     }
+
+    @Override
+    public Collection<Map<String, String>> getAreaIntro() {
+        try {
+            return jatalog.query(Expr.expr("areaIntro",getCurrentArea(), "INTRO"));
+        } catch (DatalogException e) {
+            e.printStackTrace();
+        }
+        return newMessage("Entered new Area!");
+    }
+
     @Override
     public Collection<Map<String, String>> describeArea() {
         try {
             String currentArea = getCurrentArea();
-            Collection<Map<String, String>> answers =
-                    jatalog.query(Expr.expr("area", currentArea, "AREA_DESCRIPTION"));
-            Collection<Map<String, String>> itemList = jatalog.query(Expr.expr("item","ITEM", "DESCRIPTION", currentArea));
 
-            answers.addAll(itemList);
-            return answers;
+            return jatalog.query(Expr.expr("describeArea", currentArea, "Subject", "Type"));
         } catch (DatalogException e) {
             e.printStackTrace();
         }
@@ -73,7 +79,7 @@ public class Datalog implements Queries {
     @Override
     public Collection<Map<String, String>> getPaths() {
         try {
-            return jatalog.query(Expr.expr("path",getCurrentArea(), "PATH"));
+            return jatalog.query(Expr.expr("path",getCurrentArea(), "Path"));
 
         } catch (DatalogException e) {
             e.printStackTrace();
@@ -85,8 +91,12 @@ public class Datalog implements Queries {
     public Collection<Map<String, String>>  goTo(String target) {
         try {
             if( getBoolValue("reachable",target)){
-                jatalog.delete(Expr.expr("currentArea", getCurrentArea()));
-                jatalog.fact(Expr.expr("currentArea", target));
+                jatalog.delete(Expr.expr("personArea", "me", "X"));
+                jatalog.fact(Expr.expr("personArea", "me", target));
+                if(!getBoolValue("visited", target)){
+                    jatalog.fact(Expr.expr("visited", target));
+                    return getAreaIntro();
+                }
                 return newMessage("Changed area");
             } else {
                 return newMessage("Target area not reachabele");
@@ -102,7 +112,7 @@ public class Datalog implements Queries {
     @Override
     public Collection<Map<String, String>> inventory() {
         try {
-            return jatalog.query(Expr.expr("item","ITEM", "DESCRIPTION", "inventory"));
+            return jatalog.query(Expr.expr("item","Item", "Description", "inventory"));
         } catch (DatalogException e) {
             e.printStackTrace();
         }
@@ -113,7 +123,7 @@ public class Datalog implements Queries {
     public Collection<Map<String, String>> describeItem(String itemname) {
         try {
             if(getBoolValue("visibleItem", itemname)){
-                return  jatalog.query(Expr.expr("item",itemname, "DESCRIPTION", "LOCATION"));
+                return  jatalog.query(Expr.expr("item",itemname, "Description", "Location"));
 
             } else {
                 return newMessage("I can not see that item");
@@ -142,12 +152,41 @@ public class Datalog implements Queries {
                 return newMessage("Item does not exist or is not reachable.");
 
             }
-
-
-
         } catch (DatalogException e) {
             e.printStackTrace();
         }
         return newMessage("Error while taking inventory");
+    }
+
+    @Override
+    public Collection<Map<String, String>> getTime() {
+        try {
+            return jatalog.query(Expr.expr("currentTime","Time"));
+        } catch (DatalogException e) {
+            e.printStackTrace();
+        }
+        return newMessage("Error getting the current time!");
+    }
+
+    @Override
+    public Collection<Map<String, String>> setTime(String time) {
+        try {
+            jatalog.delete(Expr.expr("currentTime", "X"));
+            jatalog.fact(Expr.expr("currentTime", time));
+        } catch (DatalogException e) {
+            e.printStackTrace();
+        }
+        return newMessage("Error setting the current time!");
+
+    }
+
+    @Override
+    public Collection<Map<String, String>> describePerson(String s) {
+        try {
+            return jatalog.query(Expr.expr("person",s, "Person"));
+        } catch (DatalogException e) {
+            e.printStackTrace();
+        }
+        return newMessage("Error setting the current time!");
     }
 }

@@ -15,6 +15,11 @@ public class REPL {
 
         List<String> history = new LinkedList<>();
 
+
+        Collection<Map<String, String>> queryResult;
+
+        System.out.println(ReplRenderer.vauleRenderer(queries.getAreaIntro()));
+
         out: while(true) {
             try {
                 System.out.print("> ");
@@ -25,11 +30,7 @@ public class REPL {
                 line = line.trim();
                 List<String> command = Arrays.asList(line.split(" "));
 
-//                StringTokenizer tokenizer = new StringTokenizer(line);
-//                if(!tokenizer.hasMoreTokens())
-//                    continue;
-//                String command = tokenizer.nextToken().toLowerCase();
-                Collection<Map<String, String>> queryResult;
+
                 switch (command.get(0)) {
                     case "exit":
                         break out;
@@ -45,33 +46,15 @@ public class REPL {
                         System.out.println("describe <area/item/person>   - Describe something");
                         System.out.println("paths                         - List available paths");
                         System.out.println("goto <area>                   - Go to a specific area");
+                        System.out.println("time                          - Get the current time");
                         System.out.println("inventory                     - List Inventory");
-                        break;
-                    case "describe":
-                        queryResult = new DescribeCommand(queries).execute(command);
-                        System.out.println(ReplRenderer.vauleRenderer(queryResult));
-                        break;
-                    case "paths":
-                        queryResult = new PathsCommand(queries).execute(command);
-                        System.out.println(ReplRenderer.renderGetPaths(queryResult));
-                        break;
-                    case "goto":
-                        queryResult = new GotoCommand(queries).execute(command);
-                        System.out.println(ReplRenderer.renderGoto(queryResult));
-                        break;
-                    case "inventory":
-                        queryResult = new InventoryCommand(queries).execute(command);
-                        System.out.println(ReplRenderer.vauleRenderer(queryResult));
-                        break;
-                    case "take":
-                        queryResult = new TakeCommand(queries).execute(command);
-                        System.out.println(ReplRenderer.defaultRenderer(queryResult));
-                        break;
-                    default:
-                        System.out.println("Unknown command, type 'help' for command list.");
                         break;
                 }
 
+                CommandParser commandParser = new CommandParser(queries);
+                Command commandObj = commandParser.commandFromText(command);
+                queryResult = commandObj.execute(command);
+                System.out.println(ReplRenderer.keyValueRenderer(queryResult));
                 history.add(line);
 
             } catch ( IOException e) {
