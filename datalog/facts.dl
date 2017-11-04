@@ -1,0 +1,35 @@
+% ------
+% AEREAS
+% ------
+area(draussen, "Draussen vor der Halle").
+area(bar, "Eine Bar in der Nähe des Konzerts").
+area(parkplatz, "Der VIP Parkplatz").
+area(backstage, "Backstage Wo man rein will").
+area(stage, "Die Bühne").
+area(auditorium, "Der Zuschauerraum").
+
+path(draussen, bar).
+path(bar, draussen).
+path(ourside, parkplatz).
+path(parkplatz, backstage).
+path(backstage, parking).
+path(backstage, stage).
+path(stage, backstage).
+path(draussen, auditorium).
+currentArea(draussen).
+
+reachable(X) :- currentArea(Y), path(Y, X).
+
+% -----
+% ITEMS
+% -----
+item(geld, "50 €", inventory).
+item(einhorn, "Stoffeinhorn mit lila Flecken", bar).
+item(mate, "Eine Flasche Mate", bar).
+item(handy, "Dein Handy", inventory).
+
+inInventory(X) :- item(X, Z, inventory).
+visibleItem(X) :- inInventory(X).
+visibleItem(X) :- item(X, Z, Y), currentArea(Y).
+
+
